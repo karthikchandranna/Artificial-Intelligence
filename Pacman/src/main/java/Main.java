@@ -1,7 +1,6 @@
 import entrants.pacman.karthik.MyPacMan;
 import examples.commGhosts.POCommGhosts;
 import pacman.Executor;
-import examples.poPacMan.POPacMan;
 
 
 /**
