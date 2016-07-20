@@ -23,11 +23,15 @@ public class UninformedPacMan extends PacmanController {
         // Should always be possible as we are PacMan
         int current = game.getPacmanCurrentNodeIndex();        
         // pills having the same x or y co-ords as the pacman and also having no obstacles between the pacman and pill
+        // Partially observable environment. Returns pills in the line of sight of PacMan.
         int[] pills = game.getPillIndices();
         int[] powerPills = game.getPowerPillIndices();
+        // Marking the current node index as visited
         visited.add(current);
+        //checking if the neighbors of the current index are visited
         for (int i = 0; i < pills.length; i++) {  
         	if(!visited.contains(pills[i]))
+        		// adding the pill to the frontier, as its not visited
         		frontier.add(pills[i]);            
         }        
         for (int i = 0; i < powerPills.length; i++) {  
@@ -39,6 +43,7 @@ public class UninformedPacMan extends PacmanController {
         	frontier.remove(current);
         }        
         //System.out.println(frontier);
+        // Select the first element of the Frontier as the Target
         int nextPill=-1;
         for(int pill: frontier) {
         	nextPill = pill;
