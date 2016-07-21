@@ -8,23 +8,33 @@ import java.util.Queue;
 import pacman.controllers.PacmanController;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
-
-public class MyPacMan extends PacmanController {	
+/**
+ * MyBFSPacMan class is used to traverse the possible game states and 
+ * return the move to the closest node in a BFS fashion. (Uninformed Search)
+ * @author Karthik Chandranna
+ */
+public class MyBFSPacMan extends PacmanController {	
 	public static ArrayList<Integer> eatenPills = new ArrayList<>();	
-	
+
 	@Override
 	public MOVE getMove(Game game, long timeDue) {		
 		int pacMan = game.getPacmanCurrentNodeIndex();	
 		eatenPills.add(pacMan);
 		System.out.println("CURRENT: " + pacMan);
-        Node target = findTarget(pacMan, game);      
-        System.out.println("TARGET");
-        System.out.println(target.toString());
-        return target.moves.get(0);
-        //return game.getNextMoveTowardsTarget(pacMan, target.index, DM.PATH);   
+		Node target = findTargetBFS(pacMan, game);      
+		System.out.println("TARGET");
+		System.out.println(target.toString());
+		return target.moves.get(0);		
 	}
 
-	private static Node findTarget(int pacMan, Game game) {		
+	/**
+	 * This method traverses through all the possible nodes from the current index in a BFS fashion
+	 * and returns the target node which is at a certain depth having the highest score.
+	 * @param pacMan The current index of the pacMan
+	 * @param game The current game state
+	 * @return The target node which has the highest score at a certain depth.
+	 */
+	private static Node findTargetBFS(int pacMan, Game game) {		
 		Game curGame = game.copy();
 		List<Integer> allPills = getAllPills(game);
 		int MAX_DEPTH = 20;
@@ -33,7 +43,7 @@ public class MyPacMan extends PacmanController {
 		MOVE[] possibleMoves = {MOVE.LEFT, MOVE.DOWN, MOVE.RIGHT, MOVE.UP};
 		int depth = 0;
 		frontier.add(new Node(pacMan,0,0,new LinkedList<MOVE>()));
-		
+		// loop until the frontier is empty or until certain depth is reached
 		while(!frontier.isEmpty() && depth<MAX_DEPTH) {			
 			Queue<Node> parents = frontier;
 			frontier = new LinkedList<Node>();
@@ -58,7 +68,7 @@ public class MyPacMan extends PacmanController {
 				}
 			}			
 		}
-		
+
 		// select the node with the highest score in the frontier at depth = MAX_DEPTH
 		int maxScore = -1;
 		Node targetNode = null;
@@ -71,8 +81,14 @@ public class MyPacMan extends PacmanController {
 		}		
 		return targetNode;
 	}
-	
-	public static List<Integer> getAllPills(Game game) {
+
+	/**
+	 * This method returns a list of all the pills in the current maze,
+	 * irrespective of whether they are eaten or not.
+	 * @param game The current game state
+	 * @return List of all the pills in the current maze
+	 */
+	private static List<Integer> getAllPills(Game game) {
 		int[] pills = game.getCurrentMaze().pillIndices;
 		int[] powerPills = game.getCurrentMaze().powerPillIndices;
 		List<Integer> allPills = new ArrayList<>();
