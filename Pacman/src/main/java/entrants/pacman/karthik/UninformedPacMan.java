@@ -38,6 +38,7 @@ public class UninformedPacMan extends PacmanController {
         for (int i = 0; i < powerPills.length; i++) {  
         	if(!visited.contains(powerPills[i]) && !frontier.contains(powerPills[i]))
         		frontier.add(powerPills[i]);            
+        }  
         if(frontier.contains(current)){
         	frontier.remove(current);
         }        
