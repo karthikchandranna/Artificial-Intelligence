@@ -1,3 +1,4 @@
+import entrants.pacman.karthik.MyPacMan;
 import entrants.pacman.karthik.InformedPacMan;
 import entrants.pacman.karthik.UninformedPacMan;
 import pacman.controllers.examples.RandomGhosts;
@@ -12,6 +13,6 @@ public class Main {
     public static void main(String[] args) {
 
         Executor executor = new Executor(true, true);
-        executor.runGameTimed(new UninformedPacMan(), new RandomGhosts(), true);
+        executor.runGameTimed(new MyPacMan(), new RandomGhosts(), true);
     }
 }

@@ -1,7 +1,9 @@
 package entrants.pacman.karthik;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+//import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 
 import pacman.controllers.PacmanController;
@@ -17,7 +19,7 @@ import pacman.game.Game;
 public class UninformedPacMan extends PacmanController {
     
     Set<Integer> visited = new HashSet<>();
-    LinkedHashSet<Integer> frontier=new LinkedHashSet<>();
+    Queue<Integer> frontier=new LinkedList<>();
     public MOVE getMove(Game game, long timeDue) {    	
 
         // Should always be possible as we are PacMan
@@ -30,25 +32,22 @@ public class UninformedPacMan extends PacmanController {
         visited.add(current);
         //checking if the neighbors of the current index are visited
         for (int i = 0; i < pills.length; i++) {  
-        	if(!visited.contains(pills[i]))
+        	if(!visited.contains(pills[i]) && !frontier.contains(pills[i]))
         		// adding the pill to the frontier, as its not visited
         		frontier.add(pills[i]);            
         }        
         for (int i = 0; i < powerPills.length; i++) {  
-        	if(!visited.contains(powerPills[i]))
+        	if(!visited.contains(powerPills[i]) && !frontier.contains(powerPills[i]))
         		frontier.add(powerPills[i]);            
         }      
         
         if(frontier.contains(current)){
         	frontier.remove(current);
         }        
-        //System.out.println(frontier);
+        System.out.println(frontier);
         // Select the first element of the Frontier as the Target
-        int nextPill=-1;
-        for(int pill: frontier) {
-        	nextPill = pill;
-        	break;
-        }        
+        int nextPill= frontier.remove();
+        System.out.println(nextPill);
         return game.getNextMoveTowardsTarget(current, nextPill, DM.PATH);     
     }
 }
