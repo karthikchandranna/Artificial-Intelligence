@@ -1,5 +1,6 @@
 package entrants.pacman.karthik;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
@@ -9,31 +10,32 @@ import pacman.controllers.PacmanController;
 import pacman.game.Constants.DM;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
+import pacman.game.internal.Maze;
 /**
  * MyGBFSPacMan class is used to traverse the possible game states and 
  * return the move to the closest node in a GBFS fashion. (Informed Search)
  * @author Karthik Chandranna
  */
 public class MyGBFSPacMan extends PacmanController {	
-	public static ArrayList<Integer> eatenPills = new ArrayList<>();	
+	public static HashMap<Maze,ArrayList<Integer>> eatenPillsPerMaze = new HashMap<>();	
 
 	@Override
 	public MOVE getMove(Game game, long timeDue) {		
-		int pacMan = game.getPacmanCurrentNodeIndex();	
+		int pacMan = game.getPacmanCurrentNodeIndex();
+		ArrayList<Integer> eatenPills = new ArrayList<>();
+		// Maintain a list of eaten pills for each maze. 
+		if(eatenPillsPerMaze.containsKey(game.getCurrentMaze()))
+			eatenPills = eatenPillsPerMaze.get(game.getCurrentMaze());		
 		eatenPills.add(pacMan);
-		System.out.println("CURRENT: " + pacMan);
-		Node target = findTargetGBFS(pacMan, game);      
-		System.out.println("TARGET");		
-		if(target != null) {
-			System.out.println(target.toString());
-			return target.moves.get(0);
-		}
+		eatenPillsPerMaze.put(game.getCurrentMaze(), eatenPills);
+		Node target = findTargetGBFS(pacMan, game);
+		if(target != null)			
+			return target.moves.get(0);		
 		// rarely when the pacMan cannot see any pills, guess the available pills.
 		else {		
 			List<Integer> allPills = getAllPills(game);
-			int[] availablePills = getAvailablePills(allPills);		
+			int[] availablePills = getAvailablePills(allPills, game.getCurrentMaze());		
 			int newTargetIndex = game.getClosestNodeIndexFromNodeIndex(pacMan, availablePills, DM.PATH);
-			System.out.println(newTargetIndex);
 			return game.getNextMoveTowardsTarget(pacMan, newTargetIndex, DM.PATH);
 		}
 	}
@@ -81,6 +83,7 @@ public class MyGBFSPacMan extends PacmanController {
 					//check if the index is not an obstacle and its not visited
 					if (childIndex>0 && !visited.contains(childIndex)) {
 						int score = parent.score;
+						ArrayList<Integer> eatenPills = eatenPillsPerMaze.get(curGame.getCurrentMaze());
 						// check if its a pill which is not eaten
 						if (allPills.contains(childIndex) && !eatenPills.contains(childIndex))
 							score += 1;
@@ -94,8 +97,7 @@ public class MyGBFSPacMan extends PacmanController {
 		}
 		// select the node with the highest score in the frontier at depth = MAX_DEPTH
 		int maxScore = -1;
-		Node targetNode = null;
-		System.out.println(frontier);
+		Node targetNode = null;		
 		for(Node node : frontier) {			
 			if(node.score > maxScore) {
 				maxScore = node.score;
@@ -125,16 +127,18 @@ public class MyGBFSPacMan extends PacmanController {
 	/**
 	 * This method returns a list of the available pills in the current maze. 
 	 * @param allPills List of all the pills in the current maze
+	 * @param maze 
 	 * @return List of available pills in the current maze
 	 */
-	private static int[] getAvailablePills(List<Integer> allPills) {
+	private static int[] getAvailablePills(List<Integer> allPills, Maze maze) {
 		List<Integer> availablePillsList = new ArrayList<>();
+		ArrayList<Integer> eatenPills = eatenPillsPerMaze.get(maze);
 		// Check for each pill in the available pills if it's already eaten
 		for(Integer pill : allPills) {
 			if(!eatenPills.contains(pill)) {
 				availablePillsList.add(pill);
 			}
-		}	
+		}
 		// converting ArrayList to int array
 		int[] availablePills = new int[availablePillsList.size()];
 		int i = 0;

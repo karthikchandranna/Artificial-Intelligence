@@ -1,5 +1,6 @@
 package entrants.pacman.karthik;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.Queue;
 
 import pacman.controllers.PacmanController;
 import pacman.game.Constants.MOVE;
+import pacman.game.internal.Maze;
 import pacman.game.Game;
 /**
  * MyBFSPacMan class is used to traverse the possible game states and 
@@ -14,16 +16,18 @@ import pacman.game.Game;
  * @author Karthik Chandranna
  */
 public class MyBFSPacMan extends PacmanController {	
-	public static ArrayList<Integer> eatenPills = new ArrayList<>();	
+	public static HashMap<Maze,ArrayList<Integer>> eatenPillsPerMaze = new HashMap<>();
 
 	@Override
 	public MOVE getMove(Game game, long timeDue) {		
-		int pacMan = game.getPacmanCurrentNodeIndex();	
+		int pacMan = game.getPacmanCurrentNodeIndex();
+		ArrayList<Integer> eatenPills = new ArrayList<>();
+		// Maintain a list of eaten pills for each maze. 
+		if(eatenPillsPerMaze.containsKey(game.getCurrentMaze()))
+			eatenPills = eatenPillsPerMaze.get(game.getCurrentMaze());		
 		eatenPills.add(pacMan);
-		System.out.println("CURRENT: " + pacMan);
-		Node target = findTargetBFS(pacMan, game);      
-		System.out.println("TARGET");
-		System.out.println(target.toString());
+		eatenPillsPerMaze.put(game.getCurrentMaze(), eatenPills);
+		Node target = findTargetBFS(pacMan, game);  
 		return target.moves.get(0);		
 	}
 
@@ -57,6 +61,7 @@ public class MyBFSPacMan extends PacmanController {
 					//check if the index is not an obstacle and its not visited
 					if (childIndex>0 && !visited.contains(childIndex)) {
 						int score = parent.score;
+						ArrayList<Integer> eatenPills = eatenPillsPerMaze.get(curGame.getCurrentMaze());
 						// check if its a pill which is not eaten
 						if (allPills.contains(childIndex) && !eatenPills.contains(childIndex))
 							score += 1;
@@ -68,11 +73,9 @@ public class MyBFSPacMan extends PacmanController {
 				}
 			}			
 		}
-
 		// select the node with the highest score in the frontier at depth = MAX_DEPTH
 		int maxScore = -1;
 		Node targetNode = null;
-		System.out.println(frontier);
 		for(Node node : frontier) {			
 			if(node.score > maxScore) {
 				maxScore = node.score;

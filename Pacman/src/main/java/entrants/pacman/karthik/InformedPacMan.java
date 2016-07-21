@@ -16,16 +16,11 @@ public class InformedPacMan extends PacmanController {
 
         // Should always be possible as we are PacMan
         int current = game.getPacmanCurrentNodeIndex();        
-        // pills having the same x or y co-ords as the pacman and also having no obstacles between the pacman and pill
+        // pills having the same x or y co-ords as the pacman and 
+        // also having no obstacles between the pacman and pill
         int[] pills = game.getPillIndices();        
         TreeMap<Integer, Integer> map = new TreeMap<>();
-        System.out.println("current-" + current);
         visited.add(current);
-        System.out.println("pills");
-        for (int i = 0; i < pills.length; i++) {  
-        	System.out.println(pills[i]);       		          
-        }
-        System.out.println("pills not visited");
         for (int i = 0; i < pills.length; i++) {  
         	if(!visited.contains((pills[i])))
         		map.put(game.getManhattanDistance(current, pills[i]),pills[i]);
@@ -38,8 +33,6 @@ public class InformedPacMan extends PacmanController {
         	}
         }               
         int nextPill = map.firstEntry().getValue();
-        System.out.println("nextPill-" + nextPill);
-        System.out.println(visited);
         return game.getNextMoveTowardsTarget(current, nextPill, DM.PATH);         
     }
 }

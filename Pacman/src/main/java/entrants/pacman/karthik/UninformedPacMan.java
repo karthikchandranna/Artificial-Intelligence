@@ -1,7 +1,6 @@
 package entrants.pacman.karthik;
 
 import java.util.HashSet;
-//import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
@@ -39,15 +38,11 @@ public class UninformedPacMan extends PacmanController {
         for (int i = 0; i < powerPills.length; i++) {  
         	if(!visited.contains(powerPills[i]) && !frontier.contains(powerPills[i]))
         		frontier.add(powerPills[i]);            
-        }      
-        
         if(frontier.contains(current)){
         	frontier.remove(current);
         }        
-        System.out.println(frontier);
         // Select the first element of the Frontier as the Target
         int nextPill= frontier.remove();
-        System.out.println(nextPill);
         return game.getNextMoveTowardsTarget(current, nextPill, DM.PATH);     
     }
 }

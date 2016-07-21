@@ -1,7 +1,5 @@
 import entrants.pacman.karthik.MyBFSPacMan;
 import entrants.pacman.karthik.MyGBFSPacMan;
-import entrants.pacman.karthik.InformedPacMan;
-import entrants.pacman.karthik.UninformedPacMan;
 import pacman.controllers.examples.RandomGhosts;
 import pacman.Executor;
 
@@ -18,9 +16,6 @@ public class Main {
         //executor.runGameTimed(new MyBFSPacMan(), new RandomGhosts(), true);
         executor.runGameTimed(new MyGBFSPacMan(), new RandomGhosts(), true);
         
-        
-        // You can try the old implementations that I discussed earlier by using InformedPacMan and UninformedPacMan
-        //executor.runGameTimed(new UninformedPacMan(), new RandomGhosts(), true);
-        //executor.runGameTimed(new InformedPacMan(), new RandomGhosts(), true);
+        //Ignore UninformedPacMan.java and InformedPacMan.java
     }
 }
