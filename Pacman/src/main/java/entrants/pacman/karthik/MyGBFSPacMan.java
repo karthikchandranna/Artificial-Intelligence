@@ -73,6 +73,9 @@ public class MyGBFSPacMan extends PacmanController {
 				}				
 			}	
 			for(Node parent : parents) {
+				// return the node if it satisfies the GOAL.
+				if(parent.score >= GOAL)
+					return parent;
 				visited.add(parent.index);
 				// rejecting the nodes who are far from the goal.
 				if(parent.score < curMaxScore)
