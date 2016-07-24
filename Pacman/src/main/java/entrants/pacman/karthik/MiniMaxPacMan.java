@@ -1,31 +1,48 @@
 package entrants.pacman.karthik;
 
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import pacman.controllers.PacmanController;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
-
+/**
+ * MiniMaxPacMan class is used to traverse the possible game states and 
+ * return the move to the closest node using MiniMax Search algorithm.  
+ * @author Karthik Chandranna
+ */
 public class MiniMaxPacMan extends PacmanController {
 
 	private Integer MAX_DEPTH = 4;
 
 	@Override
 	public MOVE getMove(Game game, long timeDue) {
-		MiniMaxNode currentNode = new MiniMaxNode(MAX_DEPTH , game.getScore(), null, game.copy());
+		MiniMaxNode currentNode = new MiniMaxNode(MAX_DEPTH , computeScore(game.copy()), null, game.copy());
 		MiniMaxNode target = miniMax(currentNode, MAX_DEPTH, true);	
-		System.out.println("Target: " + target);
-		//System.exit(-1);
 		return target.move;
 	}
 
+	/**
+	 * Finds the target node based on Minimax algorithm.
+	 * Reference - https://en.wikipedia.org/wiki/Minimax
+	 * @param node The current node whose best move is to be found out
+	 * @param depth The depth of the tree to traverse
+	 * @param isPacMan Whether the node is a Maximizing Player or not.
+	 * @return The target node which has the best score based on Minimax algorithm
+	 */
 	private MiniMaxNode miniMax(MiniMaxNode node, int depth, boolean isPacMan) {
-		if(depth == 0 || isGameOver(node.gameState))
+		// return the node if its a leaf node or if the game ended
+		if(depth == 0 || isGameOver( node.gameState))
 			return node;
+		//pacman's turn
 		if(isPacMan) {
-			//System.out.println("Pacman");
 			MiniMaxNode maxNode = new MiniMaxNode(true);
 			Game game1 = node.gameState.copy();
+			// create a child node for every possible move of the pacman
 			for(MOVE move : game1.getPossibleMoves(game1.getPacmanCurrentNodeIndex())) {
 				Game gameCopy = game1.copy();
 				gameCopy.updatePacMan(move);
@@ -33,75 +50,156 @@ public class MiniMaxPacMan extends PacmanController {
 				MOVE nextMove = node.move;
 				if(depth == MAX_DEPTH)
 					nextMove = move;	
-				MiniMaxNode child = new MiniMaxNode(depth-1, gameCopy.getScore(), nextMove, gameCopy);
-				//System.out.println("PM Child: " + child);
+				MiniMaxNode child = new MiniMaxNode(depth-1, computeScore(gameCopy), nextMove, gameCopy);
 				MiniMaxNode result = miniMax(child, depth-1, false);
-				//System.out.println("PM Result: " + result);
+				// find the node which has the maximum score
 				maxNode = findMaxNode(maxNode, result);
 			}
 			return maxNode;
 		}
+		// ghosts' turn
 		else {
-			//System.out.println("Ghosts");
 			MiniMaxNode minNode = new MiniMaxNode(false);
-			Game game2 = node.gameState.copy();//copy not required actually
-			//int ghost1Index = game2.getGhostCurrentNodeIndex(GHOST.values()[0]);
-			for(MOVE moveGhost1 : getGhostMoves(game2, GHOST.values()[0])) {
-				//System.out.println("Ghost1: " + moveGhost1);
-				//int ghost2Index = game2.getGhostCurrentNodeIndex(GHOST.values()[1]);
-				for(MOVE moveGhost2 : getGhostMoves(game2, GHOST.values()[1])) {
-					//System.out.println("inside Ghost2: " + moveGhost2);
-					//int ghost3Index = game2.getGhostCurrentNodeIndex(GHOST.values()[2]);
-					for(MOVE moveGhost3 : getGhostMoves(game2, GHOST.values()[2])) {
-						//System.out.println("inside Ghost3: " + moveGhost3);
-						//int ghost4Index = game2.getGhostCurrentNodeIndex(GHOST.values()[3]);
-						for(MOVE moveGhost4 : getGhostMoves(game2, GHOST.values()[3])) {
-							//System.out.println("inside Ghost4: " + moveGhost4);
-							Game gameCopy = game2.copy();
-							EnumMap<GHOST, MOVE> ghostMoves = new EnumMap<GHOST, MOVE>(GHOST.class);
-							ghostMoves.put(GHOST.values()[0],moveGhost1);
-							ghostMoves.put(GHOST.values()[1],moveGhost2);
-							ghostMoves.put(GHOST.values()[2],moveGhost3);
-							ghostMoves.put(GHOST.values()[3],moveGhost4);
-							//System.out.println("hello ghost");
-							gameCopy.updateGhosts(ghostMoves);
-							gameCopy.updateGame();		
-							MiniMaxNode child = new MiniMaxNode(depth-1,gameCopy.getScore(),node.move, gameCopy);
-							//System.out.println("GH Child: " + child);
-							MiniMaxNode result = miniMax(child, depth-1, true);
-							//System.out.println("GH result: " + result);
-							minNode = findMinNode(minNode, result);							
-						}
-					}
-				}
-			}		
+			Game game2 = node.gameState.copy();
+			Set<EnumMap<GHOST, MOVE>> setOfGhostMoves = getSetOfGhostsMoves(game2);
+			// create a child node for every possible move of every ghost
+			for(EnumMap<GHOST, MOVE> ghostMoves : setOfGhostMoves) {
+				Game gameCopy = game2.copy();
+				gameCopy.updateGhosts(ghostMoves);
+				gameCopy.updateGame();		
+				MiniMaxNode child = new MiniMaxNode(depth-1,computeScore(gameCopy),node.move, gameCopy);
+				MiniMaxNode result = miniMax(child, depth-1, true);
+				// find the node which has the minimum score
+				minNode = findMinNode(minNode, result);	
+			}			
 			return minNode;
 		}		
 	}
 
+	/**
+	 * This method returns the node with the higher score
+	 * @param node1 The first node
+	 * @param node2 The second node
+	 * @return The node which has the higher score
+	 */
 	private MiniMaxNode findMaxNode(MiniMaxNode node1, MiniMaxNode node2) {
 		if(node1.score >= node2.score)
 			return node1;
 		return node2;
 	}
 
-	private MiniMaxNode findMinNode(MiniMaxNode node1, MiniMaxNode node2) {
+	/**
+	 * This method returns the node with the lower score
+	 * @param node1 The first node
+	 * @param node2 The second node
+	 * @return The node which has the lower score
+	 */
+	private MiniMaxNode findMinNode(MiniMaxNode node1, MiniMaxNode node2) {		
 		if(node1.score <= node2.score)
 			return node1;
 		return node2;
 	}
 	
-	private MOVE[] getGhostMoves(Game game, GHOST ghost) {
-        MOVE[] moves = game.getPossibleMoves(game.getGhostCurrentNodeIndex(ghost), game.getGhostLastMoveMade(ghost));
-        if (moves.length <= 0 ) {            
-            return new MOVE[] {MOVE.NEUTRAL};
-        }
+	/**
+	 * This methods an array of possible moves for a given ghost
+	 * @param game The current game state
+	 * @param ghost The ghost
+	 * @return An array of possible moves
+	 */
+	private static MOVE[] getGhostMoves(Game game, GHOST ghost) {
+        MOVE[] moves = game.getPossibleMoves(game.getGhostCurrentNodeIndex(ghost));
+        if (moves.length <= 0 )        
+            return new MOVE[] {MOVE.NEUTRAL};        
         return moves;
     }
 	
-	private boolean isGameOver(Game game) {
+	/**
+	 * This method determines if the game is over
+	 * @param game The current state of the game
+	 * @return true or false
+	 */
+	private static boolean isGameOver(Game game) {
         return (game.gameOver() || game.wasPacManEaten() || 
         		(game.getNumberOfActivePills() == 0 && game.getNumberOfActivePowerPills() == 0));
     }
-
+	
+	/**
+	 * This method returns all the combinations of every single move of every ghost
+	 * @param game The current game state
+	 * @return A set of combinations of every ghost and every move
+	 */
+	private static Set<EnumMap<GHOST, MOVE>> getSetOfGhostsMoves(Game game) {
+		Set<EnumMap<GHOST, MOVE>> setOfGhostsMoves = new HashSet<>();
+		for(MOVE moveBlinky : getGhostMoves(game, GHOST.BLINKY)) {
+			for(MOVE movePinky : getGhostMoves(game, GHOST.PINKY)) {
+				for(MOVE moveInky : getGhostMoves(game, GHOST.INKY)) {
+					for(MOVE moveSue : getGhostMoves(game, GHOST.SUE)) {
+						EnumMap<GHOST, MOVE> ghostMoves = new EnumMap<GHOST, MOVE>(GHOST.class);
+						ghostMoves.put(GHOST.BLINKY,moveBlinky);
+						ghostMoves.put(GHOST.PINKY,movePinky);
+						ghostMoves.put(GHOST.INKY,moveInky);
+						ghostMoves.put(GHOST.SUE,moveSue);	
+						setOfGhostsMoves.add(ghostMoves);
+					}
+				}
+			}
+		}
+		return setOfGhostsMoves;		
+	}
+	
+	/**
+	 * This method computes the game score based on certain heuristics
+	 * @param game The current game state
+	 * @return The computed score in int
+	 */
+	private static int computeScore(Game game) {
+		int pacManIndex = game.getPacmanCurrentNodeIndex();
+		// least score if pacMan is eaten
+        if (game.wasPacManEaten())            
+            return Integer.MIN_VALUE; 
+        
+        // find closest active pill
+        int closestPillDist = Integer.MAX_VALUE;
+        int[] activePills = game.getActivePillsIndices();
+        int[] activePowerPills = game.getActivePowerPillsIndices();
+        for (int i = 0; i < activePills.length; i++) {
+        	if(game.getShortestPathDistance(pacManIndex, activePills[i]) < closestPillDist)
+        		closestPillDist = game.getShortestPathDistance(pacManIndex, activePills[i]);
+        }
+        for (int i = 0; i < activePowerPills.length; i++) {
+        	if(game.getShortestPathDistance(pacManIndex, activePowerPills[i]) < closestPillDist)
+        		closestPillDist = game.getShortestPathDistance(pacManIndex, activePowerPills[i]);
+        }
+        
+        // find the closest ghost and the distance to it
+        HashMap<GHOST, Integer> ghostsDistMap = new HashMap<>();       
+        ghostsDistMap.put(GHOST.BLINKY, game.getShortestPathDistance(pacManIndex, game.getGhostCurrentNodeIndex(GHOST.BLINKY)));
+        ghostsDistMap.put(GHOST.INKY, game.getShortestPathDistance(pacManIndex, game.getGhostCurrentNodeIndex(GHOST.INKY)));
+        ghostsDistMap.put(GHOST.PINKY, game.getShortestPathDistance(pacManIndex, game.getGhostCurrentNodeIndex(GHOST.PINKY)));
+        ghostsDistMap.put(GHOST.SUE, game.getShortestPathDistance(pacManIndex, game.getGhostCurrentNodeIndex(GHOST.SUE)));
+        
+        int minDistGhost = Integer.MAX_VALUE;
+        GHOST closestGhost = null;        
+        for (Map.Entry<GHOST, Integer> ghostDist : ghostsDistMap.entrySet()) {
+            if (ghostDist.getValue() <= minDistGhost)
+            	closestGhost = ghostDist.getKey();            
+        }
+        // reduce score if closest ghost is very close
+        int dangerousGhostScore = 600 * (25 - minDistGhost);
+        if (minDistGhost >= 25 || game.isGhostEdible(closestGhost))
+        	dangerousGhostScore = 0;
+        
+        // increase score if closest blue ghost is very close
+        int edibleGhostScore = 0;
+        if (minDistGhost <= 50 && game.isGhostEdible(closestGhost))
+        	edibleGhostScore = 100 * (50 - minDistGhost); 
+        
+        // reduce score if many active pills are in the maze
+        int activePillsCount = game.getNumberOfActivePills() + game.getNumberOfActivePowerPills();
+        // add weight to original game score (As my heuristics could be wrong !!)
+        int originalGameScore = game.getScore()*100;
+        // add up all the scores
+        int finalScore = originalGameScore + edibleGhostScore - dangerousGhostScore - activePillsCount - closestPillDist;
+        return finalScore;
+    }	
 }

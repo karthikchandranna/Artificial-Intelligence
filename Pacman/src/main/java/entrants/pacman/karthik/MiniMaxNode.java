@@ -4,7 +4,7 @@ import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
 /**
- * The MiniMaxNode class is used to store the node information of the MiniMax tree. 
+ * The MiniMaxNode class is used to store the node information of the nodes in a MiniMax tree. 
  * @author Karthik Chandranna
  */
 public class MiniMaxNode {
