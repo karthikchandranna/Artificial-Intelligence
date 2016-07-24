@@ -1,5 +1,7 @@
+import entrants.pacman.karthik.MiniMaxPacMan;
 import entrants.pacman.karthik.MyBFSPacMan;
 import entrants.pacman.karthik.MyGBFSPacMan;
+import examples.commGhosts.POCommGhosts;
 import pacman.controllers.examples.RandomGhosts;
 import pacman.Executor;
 
@@ -11,10 +13,10 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Executor executor = new Executor(true, true);
+        Executor executor = new Executor(false, true);
         // Latest implementations are MyBFSPacMan and MyGBFSPacMan        
         //executor.runGameTimed(new MyBFSPacMan(), new RandomGhosts(), true);
-        executor.runGameTimed(new MyGBFSPacMan(), new RandomGhosts(), true);
+        executor.runGameTimed(new MiniMaxPacMan(), new POCommGhosts(50), true);
         
         //Ignore UninformedPacMan.java and InformedPacMan.java
     }
