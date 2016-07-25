@@ -36,7 +36,7 @@ public class MiniMaxPacMan extends PacmanController {
 	 */
 	private MiniMaxNode miniMax(MiniMaxNode node, int depth, boolean isPacMan) {
 		// return the node if its a leaf node or if the game ended
-		if(depth == 0 || isGameOver( node.gameState))
+		if(depth == 0 || node.gameState.gameOver())
 			return node;
 		//pacman's turn
 		if(isPacMan) {
@@ -111,17 +111,7 @@ public class MiniMaxPacMan extends PacmanController {
         if (moves.length <= 0 )        
             return new MOVE[] {MOVE.NEUTRAL};        
         return moves;
-    }
-	
-	/**
-	 * This method determines if the game is over
-	 * @param game The current state of the game
-	 * @return true or false
-	 */
-	private static boolean isGameOver(Game game) {
-        return (game.gameOver() || game.wasPacManEaten() || 
-        		(game.getNumberOfActivePills() == 0 && game.getNumberOfActivePowerPills() == 0));
-    }
+    }	
 	
 	/**
 	 * This method returns all the combinations of every single move of every ghost
@@ -186,12 +176,12 @@ public class MiniMaxPacMan extends PacmanController {
         }
         // reduce score if closest ghost is very close
         int dangerousGhostScore = 600 * (25 - minDistGhost);
-        if (minDistGhost >= 25 || game.isGhostEdible(closestGhost))
+        if (minDistGhost > 25 || game.isGhostEdible(closestGhost))
         	dangerousGhostScore = 0;
         
         // increase score if closest blue ghost is very close
         int edibleGhostScore = 0;
-        if (minDistGhost <= 50 && game.isGhostEdible(closestGhost))
+        if (minDistGhost < 50 && game.isGhostEdible(closestGhost))
         	edibleGhostScore = 100 * (50 - minDistGhost); 
         
         // reduce score if many active pills are in the maze
