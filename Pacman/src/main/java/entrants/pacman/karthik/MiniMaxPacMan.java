@@ -36,7 +36,7 @@ public class MiniMaxPacMan extends PacmanController {
 	 */
 	private MiniMaxNode miniMax(MiniMaxNode node, int depth, boolean isPacMan) {
 		// return the node if its a leaf node or if the game ended
-		if(depth == 0 || node.gameState.gameOver())
+		if(depth == 0 || isGameOver(node.gameState))
 			return node;
 		//pacman's turn
 		if(isPacMan) {
@@ -111,7 +111,17 @@ public class MiniMaxPacMan extends PacmanController {
         if (moves.length <= 0 )        
             return new MOVE[] {MOVE.NEUTRAL};        
         return moves;
-    }	
+    }
+	
+	/**
+	 * This method determines if the game is over
+	 * @param game The current state of the game
+	 * @return true or false
+	 */
+	private static boolean isGameOver(Game game) {
+        return (game.gameOver() || game.wasPacManEaten() || 
+        		(game.getNumberOfActivePills() == 0 && game.getNumberOfActivePowerPills() == 0));
+    }
 	
 	/**
 	 * This method returns all the combinations of every single move of every ghost
